@@ -129,7 +129,7 @@
 
         // load GeoJSON from an external file
         var neighborhoodsLayer = null;
-        $.getJSON("blood_lead.geojson",function(data){
+        $.getJSON("data/blood_lead.geojson",function(data){
             neighborhoodsLayer = L.geoJson(data, {
                 style: styleFunc,
                 onEachFeature: onEachFeatureFunc
