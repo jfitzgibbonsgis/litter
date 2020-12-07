@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Leaflet Map</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"/>
     <style>
     
     html { height:100%;}
@@ -70,7 +70,7 @@
 </head>
 <body>
     <!-- Our web map and content will go here -->
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <div id="map" style="width: 1000px; height: 600px">
     </div>
@@ -79,39 +79,27 @@
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap' }).addTo(map);
         map.doubleClickZoom.disable();
 
-        // add point marker
-        var myDataPoint = L.marker([39.981192, -75.155399]).addTo(map);
-        myDataPoint.bindPopup("This is Temple University.");
-        myDataPoint.bindPopup("<h3>Temple University</h3><p>Philadelphia, PA<br>Information about Temple University.</p>");
         
-        // create a polyline
-        var myDataLine = L.polyline([[40.080922, -75.207875], 
-                                    [40.077375, -75.201967],
-                                    [40.073474, -75.196917],
-                                    [40.065221, -75.191110],
-                                    [40.062765, -75.185204],
-                                    [40.060498, -75.178856],
-                                    [40.051092, -75.171567],
-                                    [40.037719, -75.171922],
-                                    [40.036117, -75.161619],
-                                    [40.036117, -75.161619],
-                                    [39.981586, -75.149515]
-                                    ],
-                        {color: 'red', weight: 5}).addTo(map);
 
-        // Bind popup to line object
-        myDataLine.bindPopup("Chestnut Line");
 
-        // create a polygon of Philadelphia metro
-        var myArea = L.polygon([[40.134261, -75.270050],
-                                 [40.138132, -74.888837],
-                                 [39.873212, -74.988837],
-                                 [39.859046, -75.377775]
-                                 ],
-                     {color: 'blue', weight: 1}).addTo(map);
+        var wphillypoint = L.marker([39.97725, -75.22677]).addTo(map);
+        wphillypoint.bindPopup("West Philadelphia Pilot Area");
 
-        // Bind popup to area object
-        myArea.bindPopup("Philadelphia metro");
+        var swphillypoint = L.marker([39.93720, -75.21920]).addTo(map);
+        swphillypoint.bindPopup("Southwest Philadelphia Pilot Area");
+
+        var kenspoint = L.marker([39.99638, -75.11418]).addTo(map);
+        kenspoint.bindPopup("Kensington Pilot Area");
+
+        var strawpoint = L.marker([39.99111, -75.18]).addTo(map);
+        strawpoint.bindPopup("Strawberry Mansion Pilot Area");
+
+        var loganpoint = L.marker([40.03454, -75.14047]).addTo(map);
+        loganpoint.bindPopup("Logan Pilot Area");
+
+        var sphillypoint = L.marker([39.91895, -75.15753]).addTo(map);
+        sphillypoint.bindPopup("South Philadelphia Pilot Area");
+
 
         // Create an Empty Popup
         var popup = L.popup();
@@ -127,19 +115,20 @@
         // Listen for a click event on the Map element
         map.on('click', onMapClick);
 
-        // load GeoJSON from an external file
+       
+
         var neighborhoodsLayer = null;
-        $.getJSON("data/blood_lead.geojson",function(data){
+        $.getJSON("phillyproject.geojson",function(data){
             neighborhoodsLayer = L.geoJson(data, {
                 style: styleFunc,
                 onEachFeature: onEachFeatureFunc
             }).addTo(map);
         });
 
-        // Set style function that sets fill color property equal to blood lead
+        // Set style function that sets fill color property 
         function styleFunc(feature) {
             return {
-                fillColor: setColorFunc(feature.properties.num_bll_5p),
+                fillColor: setColorFunc(feature.properties.Avg_DIVISI),
                 fillOpacity: 0.9,
                 weight: 1,
                 opacity: 1,
@@ -148,12 +137,12 @@
             };
         }
 
-        // Set function for color ramp, you can use a better palette
+        // Set function for color ramp
         function setColorFunc(density){
-            return density > 30 ? '#d94701' :
-                   density > 20 ? '#fd8d3c' :
-                   density > 10 ?  '#fdbe85' :
-                   density > 0 ?  '#feedde' :
+            return density > 2.5 ? '#d94701' :
+                   density > 2 ? '#fd8d3c' :
+                   density > 1.5 ?  '#fdbe85' :
+                   density > 1 ?  '#feedde' :
                                   '#BFBCBB';
         };        
 
@@ -164,7 +153,12 @@
                 mouseout: resetHighlight,
                 click: zoomFeature
             });
-            layer.bindPopup('Blood lead level: '+feature.properties.num_bll_5p);
+            layer.bindPopup('<b>Neighborhood: </b>'+feature.properties.LISTNAME + '<br />' +
+                '<b>Average Litter Rating: </b>'+feature.properties.Avg_DIVISI + '<br />' +
+                '<b>Number of City Wastebaskets: </b>'+feature.properties.Count_1 + '<br />' +
+                '<b>Number of trash-related 311 calls: </b>'+feature.properties.Count_2 + '<br />' +
+                '<b>Number of participants in recycle program: </b>'+feature.properties.Count_3
+                )
         }
 
         function highlightFeature(e){
@@ -193,6 +187,8 @@
             map.fitBounds(e.target.getBounds().pad(1.5));
         }
 
+        //L.control.title({"Philadelphia"}).addTo(map);
+
         // Add Scale Bar to Map
         L.control.scale({position: 'bottomleft'}).addTo(map);
 
@@ -203,13 +199,12 @@
         legend.onAdd = function (map) {
             // Create Div Element and Populate it with HTML
             var div = L.DomUtil.create('div', 'legend');            
-            div.innerHTML += '<b>Blood lead level</b><br />';
-            div.innerHTML += 'by census tract<br />';
+            div.innerHTML += '<b>Average Litter Index Rating</b><br />';
             div.innerHTML += '<br>';
-            div.innerHTML += '<i style="background: #d94701"></i><p>30+</p>';
-            div.innerHTML += '<i style="background: #fd8d3c"></i><p>20-30</p>';
-            div.innerHTML += '<i style="background: #fdbe85"></i><p>10-20</p>';
-            div.innerHTML += '<i style="background: #feedde"></i><p>0-10</p>';
+            div.innerHTML += '<i style="background: #d94701"></i><p>2.5+</p>';
+            div.innerHTML += '<i style="background: #fd8d3c"></i><p>2-2.5</p>';
+            div.innerHTML += '<i style="background: #fdbe85"></i><p>1.5-2</p>';
+            div.innerHTML += '<i style="background: #feedde"></i><p>1-1.5</p>';
             div.innerHTML += '<hr>';
             div.innerHTML += '<i style="background: #BFBCBB"></i><p>No Data</p>';
     
