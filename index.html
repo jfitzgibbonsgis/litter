@@ -118,7 +118,7 @@
        
 
         var neighborhoodsLayer = null;
-        $.getJSON("phillyproject.geojson",function(data){
+        $.getJSON("data/phillyproject.geojson",function(data){
             neighborhoodsLayer = L.geoJson(data, {
                 style: styleFunc,
                 onEachFeature: onEachFeatureFunc
